@@ -1,0 +1,112 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String?
+  name          String
+  role          String         @default("STUDENT") // STUDENT, ADMIN
+  avatarUrl     String?
+  streak        Int            @default(0)
+  lastActive    DateTime?
+  xp            Int            @default(0)
+  level         Int            @default(1)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  progress      Progress[]
+  achievements  Achievement[]
+  notes         Note[]
+  submissions   Submission[]
+}
+
+model Course {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  category    String
+  difficulty  String    // BEGINNER, INTERMEDIATE, ADVANCED
+  imageUrl    String?
+  lessons     Lesson[]
+  quizzes     Quiz[]
+  createdAt   DateTime  @default(now())
+}
+
+model Lesson {
+  id          String     @id @default(uuid())
+  courseId    String
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  content     String     // Markdown text content
+  videoUrl    String?
+  orderIndex  Int
+  progress    Progress[]
+}
+
+model Quiz {
+  id          String       @id @default(uuid())
+  courseId    String
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  timeLimit   Int          // in seconds
+  questions   Question[]
+  submissions Submission[]
+}
+
+model Question {
+  id            String   @id @default(uuid())
+  quizId        String
+  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questionText  String
+  type          String   // MULTIPLE_CHOICE, TRUE_FALSE, FILL_BLANK, CODE
+  options       String   // JSON array of strings
+  correctAnswer String
+}
+
+model Progress {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime  @default(now())
+
+  @@unique([userId, lessonId])
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  badgeIcon   String
+  unlockedAt  DateTime @default(now())
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String   // Markdown notes content
+  updatedAt DateTime @updatedAt
+}
+
+model Submission {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizId     String
+  quiz       Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  score      Int
+  passed     Boolean
+  submittedAt DateTime @default(now())
+}

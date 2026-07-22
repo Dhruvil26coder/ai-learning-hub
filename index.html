@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Importance of CS × AI | An Animated Explainer</title>
+    <meta name="description" content="An immersive animated presentation exploring why Computer Science and Artificial Intelligence together are reshaping our world.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-deep: #06060f;
+            --bg-card: rgba(255,255,255,0.04);
+            --accent-1: #6C5CE7;
+            --accent-2: #00CECE;
+            --accent-3: #FD79A8;
+            --accent-4: #FDCB6E;
+            --text-primary: #f0f0f8;
+            --text-secondary: rgba(240,240,248,0.55);
+            --glow-purple: rgba(108,92,231,0.35);
+            --glow-cyan: rgba(0,206,206,0.35);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ===== PARTICLE CANVAS ===== */
+        #particles {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ===== PROGRESS BAR ===== */
+        #progress-bar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
+            z-index: 1000;
+            transition: width 0.8s cubic-bezier(.22,1,.36,1);
+            box-shadow: 0 0 20px var(--glow-cyan);
+        }
+
+        /* ===== SLIDE COUNTER ===== */
+        #slide-counter {
+            position: fixed;
+            bottom: 30px;
+            right: 40px;
+            z-index: 1000;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+        }
+        #slide-counter span { color: var(--accent-2); font-weight: 700; }
+
+        /* ===== CONTROLS ===== */
+        #controls {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .ctrl-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-primary);
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .ctrl-btn:hover { background: var(--accent-1); border-color: var(--accent-1); transform: scale(1.1); }
+        .ctrl-btn.active { background: var(--accent-3); border-color: var(--accent-3); }
+
+        /* ===== SLIDE CONTAINER ===== */
+        #slideshow {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 60px 80px;
+            opacity: 0;
+            transform: scale(0.92) translateY(40px);
+            transition: opacity 1s cubic-bezier(.22,1,.36,1), transform 1s cubic-bezier(.22,1,.36,1);
+            pointer-events: none;
+        }
+        .slide.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: all;
+        }
+        .slide.exit {
+            opacity: 0;
+            transform: scale(1.05) translateY(-40px);
+        }
+
+        /* ===== TYPOGRAPHY ===== */
+        .slide-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--accent-2);
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .slide.active .slide-tag { animation: fadeUp 0.8s 0.3s forwards; }
+
+        .slide-title {
+            font-size: clamp(2.2rem, 5vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            text-align: center;
+            max-width: 900px;
+            margin-bottom: 24px;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        .slide.active .slide-title { animation: fadeUp 0.8s 0.5s forwards; }
+
+        .slide-subtitle {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            font-weight: 300;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 700px;
+            line-height: 1.7;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .slide.active .slide-subtitle { animation: fadeUp 0.8s 0.7s forwards; }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .gradient-text-2 {
+            background: linear-gradient(135deg, var(--accent-3), var(--accent-4));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .gradient-text-3 {
+            background: linear-gradient(135deg, var(--accent-2), #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ===== ANIMATED GRID (SLIDE 2) ===== */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+            margin-top: 30px;
+        }
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 28px 24px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(30px);
+            backdrop-filter: blur(8px);
+            transition: all 0.4s;
+        }
+        .info-card:hover { border-color: var(--accent-2); transform: translateY(-4px) !important; box-shadow: 0 8px 40px var(--glow-cyan); }
+        .slide.active .info-card { animation: fadeUp 0.7s forwards; }
+        .slide.active .info-card:nth-child(1) { animation-delay: 0.4s; }
+        .slide.active .info-card:nth-child(2) { animation-delay: 0.6s; }
+        .slide.active .info-card:nth-child(3) { animation-delay: 0.8s; }
+        .slide.active .info-card:nth-child(4) { animation-delay: 1.0s; }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 14px;
+            display: block;
+        }
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ===== TIMELINE (SLIDE 4) ===== */
+        .timeline {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            max-width: 1000px;
+            width: 100%;
+            margin-top: 40px;
+            position: relative;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3), var(--accent-4));
+        }
+        .tl-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        .slide.active .tl-item { animation: fadeUp 0.7s forwards; }
+        .slide.active .tl-item:nth-child(1) { animation-delay: 0.4s; }
+        .slide.active .tl-item:nth-child(2) { animation-delay: 0.7s; }
+        .slide.active .tl-item:nth-child(3) { animation-delay: 1.0s; }
+        .slide.active .tl-item:nth-child(4) { animation-delay: 1.3s; }
+
+        .tl-dot {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: var(--accent-2);
+            margin: 17px auto 16px;
+            box-shadow: 0 0 20px var(--glow-cyan);
+            position: relative;
+            z-index: 2;
+        }
+        .tl-year {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-4);
+            letter-spacing: 1px;
+        }
+        .tl-label {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            line-height: 1.5;
+            padding: 0 8px;
+        }
+
+        /* ===== STAT COUNTERS (SLIDE 5) ===== */
+        .stats-row {
+            display: flex;
+            gap: 50px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .stat-item {
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        .slide.active .stat-item { animation: popIn 0.6s forwards; }
+        .slide.active .stat-item:nth-child(1) { animation-delay: 0.4s; }
+        .slide.active .stat-item:nth-child(2) { animation-delay: 0.7s; }
+        .slide.active .stat-item:nth-child(3) { animation-delay: 1.0s; }
+
+        .stat-number {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        /* ===== PILLARS (SLIDE 6) ===== */
+        .pillars {
+            display: flex;
+            gap: 24px;
+            margin-top: 40px;
+            max-width: 1000px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .pillar {
+            flex: 1;
+            min-width: 200px;
+            max-width: 280px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 32px 24px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.06);
+            opacity: 0;
+            transform: translateY(40px) rotateX(10deg);
+            transition: all 0.4s;
+        }
+        .pillar:hover { border-color: var(--accent-1); transform: translateY(-6px) rotateX(0deg) !important; }
+        .slide.active .pillar { animation: fadeUp 0.8s forwards; }
+        .slide.active .pillar:nth-child(1) { animation-delay: 0.4s; }
+        .slide.active .pillar:nth-child(2) { animation-delay: 0.6s; }
+        .slide.active .pillar:nth-child(3) { animation-delay: 0.8s; }
+        .pillar-icon { font-size: 2.5rem; margin-bottom: 16px; }
+        .pillar-title { font-weight: 700; margin-bottom: 10px; font-size: 1.1rem; }
+        .pillar-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+        /* ===== CODE BLOCK (SLIDE 3) ===== */
+        .code-block {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 28px 32px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+            line-height: 1.8;
+            max-width: 700px;
+            width: 100%;
+            margin-top: 30px;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .slide.active .code-block { animation: fadeUp 0.8s 0.6s forwards; }
+        .code-line { opacity: 0; }
+        .slide.active .code-line { animation: typeIn 0.4s forwards; }
+        .kw { color: var(--accent-1); }
+        .fn { color: var(--accent-2); }
+        .str { color: var(--accent-3); }
+        .cm { color: var(--text-secondary); font-style: italic; }
+        .num { color: var(--accent-4); }
+
+        /* ===== FLOATING ORB BG ===== */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            pointer-events: none;
+            animation: orbFloat 12s ease-in-out infinite alternate;
+        }
+        .orb-1 { width: 500px; height: 500px; background: var(--accent-1); top: -100px; right: -100px; }
+        .orb-2 { width: 400px; height: 400px; background: var(--accent-2); bottom: -80px; left: -80px; animation-delay: -4s; }
+        .orb-3 { width: 350px; height: 350px; background: var(--accent-3); top: 40%; left: 60%; animation-delay: -8s; }
+
+        /* ===== IMPACT LIST (SLIDE 7) ===== */
+        .impact-list {
+            list-style: none;
+            max-width: 700px;
+            width: 100%;
+            margin-top: 30px;
+        }
+        .impact-item {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 18px 24px;
+            border-radius: 12px;
+            background: var(--bg-card);
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            opacity: 0;
+            transform: translateX(-40px);
+            transition: all 0.3s;
+        }
+        .impact-item:hover { border-color: var(--accent-2); transform: translateX(6px) !important; }
+        .slide.active .impact-item { animation: slideRight 0.6s forwards; }
+        .slide.active .impact-item:nth-child(1) { animation-delay: 0.4s; }
+        .slide.active .impact-item:nth-child(2) { animation-delay: 0.6s; }
+        .slide.active .impact-item:nth-child(3) { animation-delay: 0.8s; }
+        .slide.active .impact-item:nth-child(4) { animation-delay: 1.0s; }
+        .slide.active .impact-item:nth-child(5) { animation-delay: 1.2s; }
+
+        .impact-icon { font-size: 1.8rem; flex-shrink: 0; }
+        .impact-text { font-size: 0.95rem; line-height: 1.5; }
+        .impact-text strong { color: var(--accent-2); }
+
+        /* ===== CTA SLIDE (FINAL) ===== */
+        .cta-badge {
+            display: inline-block;
+            padding: 10px 28px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 30px;
+            cursor: pointer;
+            transition: all 0.4s;
+            opacity: 0;
+            transform: translateY(20px);
+            box-shadow: 0 4px 30px var(--glow-purple);
+        }
+        .cta-badge:hover { transform: translateY(-2px) scale(1.05) !important; box-shadow: 0 8px 50px var(--glow-cyan); }
+        .slide.active .cta-badge { animation: fadeUp 0.8s 1s forwards; }
+
+        /* ===== KEYFRAMES ===== */
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0) rotateX(0); }
+        }
+        @keyframes popIn {
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes slideRight {
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes typeIn {
+            to { opacity: 1; }
+        }
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(40px, -40px); }
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px var(--glow-cyan); }
+            50% { box-shadow: 0 0 40px var(--glow-cyan), 0 0 80px var(--glow-purple); }
+        }
+        @keyframes rotate {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .slide { padding: 40px 24px; }
+            .info-grid { grid-template-columns: 1fr 1fr; }
+            .timeline { flex-direction: column; gap: 20px; }
+            .timeline::before { display: none; }
+            .stats-row { gap: 30px; }
+            .pillars { flex-direction: column; align-items: center; }
+            #slide-counter { right: 20px; bottom: 20px; }
+        }
+
+        /* ===== NEURAL NETWORK VIS (SLIDE 3) ===== */
+        .neural-vis {
+            position: absolute;
+            top: 50%;
+            right: 5%;
+            transform: translateY(-50%);
+            width: 300px;
+            height: 300px;
+            opacity: 0.12;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<div id="progress-bar"></div>
+<div id="slide-counter"><span id="current-num">01</span> / <span id="total-num">09</span></div>
+
+<div id="controls">
+    <button class="ctrl-btn" id="btn-prev" title="Previous">◀</button>
+    <button class="ctrl-btn" id="btn-play" title="Play/Pause">⏸</button>
+    <button class="ctrl-btn" id="btn-next" title="Next">▶</button>
+</div>
+
+<div id="slideshow">
+    <!-- Ambient orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- SLIDE 1: INTRO -->
+    <div class="slide active" data-index="0">
+        <div class="slide-tag">// an animated explainer</div>
+        <h1 class="slide-title">The Power of <span class="gradient-text">Computer Science</span> × <span class="gradient-text-2">Artificial Intelligence</span></h1>
+        <p class="slide-subtitle">Why the fusion of CS fundamentals and AI capabilities is the most transformative force of our century.</p>
+    </div>
+
+    <!-- SLIDE 2: WHAT IS CS × AI -->
+    <div class="slide" data-index="1">
+        <div class="slide-tag">// the convergence</div>
+        <h1 class="slide-title">Where <span class="gradient-text">CS Meets AI</span></h1>
+        <p class="slide-subtitle">Computer Science provides the foundation — algorithms, data structures, systems thinking. AI adds the ability to learn, adapt, and reason.</p>
+        <div class="info-grid">
+            <div class="info-card">
+                <span class="card-icon">🧠</span>
+                <div class="card-title">Machine Learning</div>
+                <div class="card-desc">Algorithms that improve through experience and data patterns</div>
+            </div>
+            <div class="info-card">
+                <span class="card-icon">🗣️</span>
+                <div class="card-title">NLP</div>
+                <div class="card-desc">Enabling machines to understand and generate human language</div>
+            </div>
+            <div class="info-card">
+                <span class="card-icon">👁️</span>
+                <div class="card-title">Computer Vision</div>
+                <div class="card-desc">Teaching computers to interpret visual information from the world</div>
+            </div>
+            <div class="info-card">
+                <span class="card-icon">🤖</span>
+                <div class="card-title">Robotics</div>
+                <div class="card-desc">Intelligent physical systems that interact with the real world</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: THE CODE BEHIND AI -->
+    <div class="slide" data-index="2">
+        <div class="slide-tag">// cs is the engine</div>
+        <h1 class="slide-title">CS is the <span class="gradient-text-3">Engine</span> Behind AI</h1>
+        <p class="slide-subtitle">Without computer science, AI would remain a theoretical dream. Every breakthrough is built on code.</p>
+        <div class="code-block">
+            <div class="code-line" style="animation-delay:0.8s"><span class="cm"># The foundation of every AI system</span></div>
+            <div class="code-line" style="animation-delay:1.0s"><span class="kw">import</span> <span class="fn">neural_network</span> <span class="kw">as</span> nn</div>
+            <div class="code-line" style="animation-delay:1.2s"><span class="kw">import</span> <span class="fn">algorithms</span>, <span class="fn">data_structures</span></div>
+            <div class="code-line" style="animation-delay:1.4s">&nbsp;</div>
+            <div class="code-line" style="animation-delay:1.6s"><span class="kw">class</span> <span class="fn">Intelligence</span>(nn.<span class="fn">Module</span>):</div>
+            <div class="code-line" style="animation-delay:1.8s">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">def</span> <span class="fn">forward</span>(self, <span class="fn">world_data</span>):</div>
+            <div class="code-line" style="animation-delay:2.0s">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;features = self.<span class="fn">perceive</span>(world_data)</div>
+            <div class="code-line" style="animation-delay:2.2s">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;knowledge = self.<span class="fn">reason</span>(features)</div>
+            <div class="code-line" style="animation-delay:2.4s">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> self.<span class="fn">act</span>(knowledge)</div>
+            <div class="code-line" style="animation-delay:2.6s">&nbsp;</div>
+            <div class="code-line" style="animation-delay:2.8s"><span class="cm"># CS + AI = Limitless Potential ✨</span></div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: EVOLUTION TIMELINE -->
+    <div class="slide" data-index="3">
+        <div class="slide-tag">// the journey</div>
+        <h1 class="slide-title">The <span class="gradient-text-2">Evolution</span> of CS × AI</h1>
+        <p class="slide-subtitle">From Turing's vision to today's generative models — decades of breakthroughs built on CS foundations.</p>
+        <div class="timeline">
+            <div class="tl-item">
+                <div class="tl-year">1950s</div>
+                <div class="tl-dot"></div>
+                <div class="tl-label">Turing Test & early rule-based AI systems</div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-year">1990s</div>
+                <div class="tl-dot"></div>
+                <div class="tl-label">Deep Blue defeats Kasparov; ML algorithms emerge</div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-year">2010s</div>
+                <div class="tl-dot"></div>
+                <div class="tl-label">Deep Learning revolution; AlphaGo; neural networks scale</div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-year">2020s</div>
+                <div class="tl-dot"></div>
+                <div class="tl-label">Generative AI, LLMs, AI agents transforming every industry</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: STATS -->
+    <div class="slide" data-index="4">
+        <div class="slide-tag">// by the numbers</div>
+        <h1 class="slide-title">The Impact in <span class="gradient-text">Numbers</span></h1>
+        <p class="slide-subtitle">AI powered by CS is reshaping the global economy at an unprecedented scale.</p>
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-number gradient-text" data-target="15.7" data-suffix="T" data-decimals="1">0</div>
+                <div class="stat-label">AI contribution to global GDP by 2030</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number gradient-text-2" data-target="97" data-suffix="M" data-decimals="0">0</div>
+                <div class="stat-label">New jobs created by AI transformation</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number gradient-text-3" data-target="40" data-suffix="%" data-decimals="0">0</div>
+                <div class="stat-label">Productivity boost in AI-adopting industries</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: THREE PILLARS -->
+    <div class="slide" data-index="5">
+        <div class="slide-tag">// why it matters</div>
+        <h1 class="slide-title">Three Pillars of <span class="gradient-text-2">Importance</span></h1>
+        <div class="pillars">
+            <div class="pillar">
+                <div class="pillar-icon">⚡</div>
+                <div class="pillar-title">Problem Solving at Scale</div>
+                <div class="pillar-desc">CS algorithms + AI can tackle climate modeling, drug discovery, and logistics optimization that humans alone cannot.</div>
+            </div>
+            <div class="pillar">
+                <div class="pillar-icon">🎯</div>
+                <div class="pillar-title">Democratized Intelligence</div>
+                <div class="pillar-desc">AI tools built on CS make advanced capabilities accessible to everyone — from students to researchers to entrepreneurs.</div>
+            </div>
+            <div class="pillar">
+                <div class="pillar-icon">🚀</div>
+                <div class="pillar-title">Exponential Innovation</div>
+                <div class="pillar-desc">AI accelerates the pace of scientific discovery, coding, design, and creativity — creating a compounding innovation loop.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: REAL-WORLD IMPACT -->
+    <div class="slide" data-index="6">
+        <div class="slide-tag">// real-world impact</div>
+        <h1 class="slide-title">Transforming <span class="gradient-text">Every Industry</span></h1>
+        <ul class="impact-list">
+            <li class="impact-item">
+                <span class="impact-icon">🏥</span>
+                <span class="impact-text"><strong>Healthcare:</strong> AI diagnoses diseases from medical images with superhuman accuracy</span>
+            </li>
+            <li class="impact-item">
+                <span class="impact-icon">🌍</span>
+                <span class="impact-text"><strong>Climate:</strong> ML models predict weather patterns and optimize renewable energy grids</span>
+            </li>
+            <li class="impact-item">
+                <span class="impact-icon">🎓</span>
+                <span class="impact-text"><strong>Education:</strong> Personalized AI tutors adapt to each student's learning style and pace</span>
+            </li>
+            <li class="impact-item">
+                <span class="impact-icon">🔬</span>
+                <span class="impact-text"><strong>Science:</strong> AlphaFold predicted 200M+ protein structures, revolutionizing biology</span>
+            </li>
+            <li class="impact-item">
+                <span class="impact-icon">💼</span>
+                <span class="impact-text"><strong>Business:</strong> AI agents automate workflows, analysis, and decision-making at scale</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 8: SKILLS THAT MATTER -->
+    <div class="slide" data-index="7">
+        <div class="slide-tag">// your path forward</div>
+        <h1 class="slide-title">CS + AI <span class="gradient-text-3">Skills to Master</span></h1>
+        <p class="slide-subtitle">The most powerful career combination of the decade.</p>
+        <div class="info-grid">
+            <div class="info-card">
+                <span class="card-icon">📊</span>
+                <div class="card-title">Data Structures & Algorithms</div>
+                <div class="card-desc">The bedrock of efficient AI systems and scalable solutions</div>
+            </div>
+            <div class="info-card">
+                <span class="card-icon">🐍</span>
+                <div class="card-title">Python & ML Frameworks</div>
+                <div class="card-desc">PyTorch, TensorFlow, and the tools powering modern AI</div>
+            </div>
+            <div class="info-card">
+                <span class="card-icon">📐</span>
+                <div class="card-title">Math & Statistics</div>
+                <div class="card-desc">Linear algebra, calculus, and probability — AI's language</div>
+            </div>
+            <div class="info-card">
+                <span class="card-icon">☁️</span>
+                <div class="card-title">Cloud & Systems Design</div>
+                <div class="card-desc">Deploying AI at scale requires deep systems knowledge</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: CLOSING -->
+    <div class="slide" data-index="8">
+        <div class="slide-tag">// the future is now</div>
+        <h1 class="slide-title">The Future Belongs to Those Who <span class="gradient-text">Code</span> It</h1>
+        <p class="slide-subtitle">Computer Science gives you the power to build. AI gives that power intelligence. Together, they are unstoppable.</p>
+        <div class="cta-badge" onclick="location.reload()">↻ Replay Presentation</div>
+    </div>
+</div>
+
+<script>
+// ===== PARTICLE SYSTEM =====
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+    constructor() {
+        this.reset();
+    }
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = (Math.random() - 0.5) * 0.4;
+        this.speedY = (Math.random() - 0.5) * 0.4;
+        this.opacity = Math.random() * 0.4 + 0.1;
+        this.hue = Math.random() > 0.5 ? 260 : 180; // purple or cyan
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+            this.reset();
+        }
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${this.hue}, 80%, 70%, ${this.opacity})`;
+        ctx.fill();
+    }
+}
+
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+function drawConnections() {
+    for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+                ctx.beginPath();
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.strokeStyle = `rgba(108, 92, 231, ${0.08 * (1 - dist / 120)})`;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+        }
+    }
+}
+
+function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    drawConnections();
+    requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ===== SLIDESHOW ENGINE =====
+const slides = document.querySelectorAll('.slide');
+const totalSlides = slides.length;
+let currentSlide = 0;
+let isPlaying = true;
+let autoTimer = null;
+const SLIDE_DURATION = 6000; // ms per slide
+
+const progressBar = document.getElementById('progress-bar');
+const currentNum = document.getElementById('current-num');
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+const btnPlay = document.getElementById('btn-play');
+
+function updateProgress() {
+    const pct = ((currentSlide + 1) / totalSlides) * 100;
+    progressBar.style.width = pct + '%';
+    currentNum.textContent = String(currentSlide + 1).padStart(2, '0');
+}
+
+function goToSlide(index) {
+    if (index < 0 || index >= totalSlides || index === currentSlide) return;
+
+    const prev = slides[currentSlide];
+    prev.classList.remove('active');
+    prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 1000);
+
+    // Reset animations on previous slide elements
+    resetSlideAnimations(prev);
+
+    currentSlide = index;
+    const next = slides[currentSlide];
+    next.classList.add('active');
+
+    updateProgress();
+    animateCounters(next);
+
+    if (isPlaying) resetAutoPlay();
+}
+
+function resetSlideAnimations(slide) {
+    const animated = slide.querySelectorAll('.info-card, .tl-item, .stat-item, .pillar, .impact-item, .code-line, .slide-tag, .slide-title, .slide-subtitle, .code-block, .cta-badge');
+    animated.forEach(el => {
+        el.style.animation = 'none';
+        el.offsetHeight; // trigger reflow
+        el.style.animation = '';
+        el.style.opacity = '0';
+    });
+}
+
+function nextSlide() {
+    if (currentSlide < totalSlides - 1) {
+        goToSlide(currentSlide + 1);
+    } else {
+        goToSlide(0); // loop
+    }
+}
+
+function prevSlide() {
+    if (currentSlide > 0) goToSlide(currentSlide - 1);
+}
+
+function togglePlay() {
+    isPlaying = !isPlaying;
+    btnPlay.textContent = isPlaying ? '⏸' : '▶';
+    btnPlay.classList.toggle('active', !isPlaying);
+    if (isPlaying) resetAutoPlay();
+    else clearInterval(autoTimer);
+}
+
+function resetAutoPlay() {
+    clearInterval(autoTimer);
+    autoTimer = setInterval(nextSlide, SLIDE_DURATION);
+}
+
+// ===== COUNTER ANIMATION =====
+function animateCounters(slide) {
+    const counters = slide.querySelectorAll('[data-target]');
+    counters.forEach(counter => {
+        const target = parseFloat(counter.dataset.target);
+        const suffix = counter.dataset.suffix || '';
+        const decimals = parseInt(counter.dataset.decimals) || 0;
+        let current = 0;
+        const duration = 2000;
+        const startTime = performance.now();
+
+        function tick(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+            current = target * eased;
+            counter.textContent = '$' + current.toFixed(decimals) + suffix;
+            // Remove the $ for non-currency
+            counter.textContent = current.toFixed(decimals) + suffix;
+            if (progress < 1) requestAnimationFrame(tick);
+        }
+        // Delay to match the popIn animation
+        setTimeout(() => requestAnimationFrame(tick), 600);
+    });
+}
+
+// ===== EVENT LISTENERS =====
+btnNext.addEventListener('click', nextSlide);
+btnPrev.addEventListener('click', prevSlide);
+btnPlay.addEventListener('click', togglePlay);
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+    if (e.key === 'p' || e.key === 'P') togglePlay();
+});
+
+// Touch/swipe support
+let touchStartX = 0;
+document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+document.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+        if (diff > 0) nextSlide();
+        else prevSlide();
+    }
+});
+
+// ===== INIT =====
+updateProgress();
+resetAutoPlay();
+
+// Ensure first slide animations play on load
+setTimeout(() => {
+    const firstSlide = slides[0];
+    const elements = firstSlide.querySelectorAll('.slide-tag, .slide-title, .slide-subtitle');
+    elements.forEach(el => el.style.opacity = '');
+}, 50);
+</script>
+
+</body>
+</html>
