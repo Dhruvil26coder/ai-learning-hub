@@ -5,6 +5,9 @@ import authRoutes from "./routes/auth";
 import courseRoutes from "./routes/courses";
 import tutorRoutes from "./routes/tutor";
 import playgroundRoutes from "./routes/playground";
+import prisma from "./db";
+import http from "http";
+import https from "https";
 
 dotenv.config();
 
@@ -44,4 +47,36 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+
+  // ============================================
+  // KEEP-ALIVE SYSTEM
+  // Prevents Supabase from pausing (pings DB every 4 days)
+  // Prevents Render from sleeping (self-pings every 14 minutes)
+  // ============================================
+
+  // 1. Ping the database every 4 days to keep Supabase active
+  const FOUR_DAYS_MS = 4 * 24 * 60 * 60 * 1000;
+  setInterval(async () => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      console.log("[Keep-Alive] ✅ Database pinged successfully - Supabase stays awake!");
+    } catch (err) {
+      console.error("[Keep-Alive] ❌ Database ping failed:", err);
+    }
+  }, FOUR_DAYS_MS);
+
+  // 2. Self-ping every 14 minutes to prevent Render free tier from sleeping
+  const RENDER_URL = process.env.RENDER_EXTERNAL_URL || "";
+  if (RENDER_URL) {
+    const FOURTEEN_MINS_MS = 14 * 60 * 1000;
+    setInterval(() => {
+      const url = `${RENDER_URL}/health`;
+      const requester = url.startsWith("https") ? https : http;
+      requester.get(url, (res) => {
+        console.log(`[Keep-Alive] ✅ Self-ping sent to Render (status: ${res.statusCode}) - Server stays awake!`);
+      }).on("error", (err) => {
+        console.error("[Keep-Alive] ❌ Self-ping failed:", err.message);
+      });
+    }, FOURTEEN_MINS_MS);
+  }
 });
