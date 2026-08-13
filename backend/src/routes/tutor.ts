@@ -225,8 +225,8 @@ Keep explanations clear, accurate, and educational.`;
             })
           }
         );
-        const geminiData = await geminiRes.json();
-        const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+        const geminiData = await geminiRes.json() as any;
+        const geminiText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (geminiText) {
           return res.json({ text: geminiText, provider: "google-gemini" });
         }
