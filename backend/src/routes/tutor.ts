@@ -178,21 +178,66 @@ router.post("/chat", async (req: Request, res: Response) => {
     const currentSubject = subject || "General Study";
     const currentMode = mode || "normal";
 
-    if (openai) {
-      // Create chat context using history and system instruction
-      const systemPrompt = `You are "AI Tutor", a highly encouraging, premium, and intelligent educational assistant.
+    const systemPrompt = `You are "AI Tutor", a highly encouraging, intelligent educational assistant like Gemini.
 You adapt your explanations for a learner at the ${currentLevel} level.
 The current study subject is: ${currentSubject}.
 Your interaction mode is: ${currentMode}.
 
 Instructions based on mode:
-- "normal": Explain concepts clearly and concisely with markdown formatting, headers, lists, and LaTeX math. Suggest the next logical topic to study.
-- "quiz": Generate 3 quiz questions matching the subject and difficulty. Include options and correct answers.
-- "flashcard": Generate 3 key flashcards (Front/Back) summarizing key items of the subject.
-- "step-by-step": Break down the user's math, science, or code question into clear, numbered logical steps. Use LaTeX equations where applicable.
+- "normal": Explain concepts clearly and thoroughly with headers, bullet points, code snippets, formulas, and real-world examples.
+- "quiz": Generate 3 practice quiz questions with options and correct answers.
+- "flashcard": Generate 3 key study flashcards.
+- "step-by-step": Break down math or science equations into clear numbered steps.
 
-Keep explanations clear, engaging, and premium. Use code blocks for programming. Use latex double dollar signs for blocks ($$...$$) and single dollar signs for inline ($...$) math equations.`;
+Keep explanations clear, accurate, and educational.`;
 
+    // 1. Try Google Gemini API if GEMINI_API_KEY is present
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey) {
+      try {
+        // Build conversation history for multi-turn chat
+        const conversationHistory = (history || []).map((h: any) => ({
+          role: h.sender === "user" ? "user" : "model",
+          parts: [{ text: h.text }]
+        }));
+
+        // Add the current user message
+        conversationHistory.push({
+          role: "user",
+          parts: [{ text: message }]
+        });
+
+        const geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: systemPrompt }]
+              },
+              contents: conversationHistory,
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 2048,
+                topP: 0.95
+              }
+            })
+          }
+        );
+        const geminiData = await geminiRes.json();
+        const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (geminiText) {
+          return res.json({ text: geminiText, provider: "google-gemini" });
+        }
+        console.error("Gemini API returned no text:", JSON.stringify(geminiData));
+      } catch (geminiErr) {
+        console.error("Gemini API Error:", geminiErr);
+      }
+    }
+
+    // 2. Try OpenAI API if OPENAI_API_KEY is present
+    if (openai) {
       const messages = [
         { role: "system", content: systemPrompt },
         ...(history || []).map((h: any) => ({
@@ -211,13 +256,12 @@ Keep explanations clear, engaging, and premium. Use code blocks for programming.
 
       const text = response.choices[0]?.message?.content || "I couldn't generate a response.";
       return res.json({ text, provider: "openai" });
-    } else {
-      // Fallback local simulation
-      const text = generateFallbackResponse(message, currentLevel, currentSubject, currentMode);
-      // Add brief delay to simulate network/AI generation
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      return res.json({ text, provider: "simulated-local-ai" });
     }
+
+    // 3. Fallback AI response generator
+    const text = generateFallbackResponse(message, currentLevel, currentSubject, currentMode);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return res.json({ text, provider: "simulated-local-ai" });
   } catch (error: any) {
     console.error("AI Tutor Chat Error:", error);
     res.status(500).json({ error: "Internal Server Error", message: error.message });

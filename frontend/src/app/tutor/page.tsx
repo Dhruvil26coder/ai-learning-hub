@@ -183,7 +183,7 @@ export default function AITutor() {
               <span className="text-xs font-semibold text-[var(--foreground)]">AI Study Assistant</span>
             </div>
             <span className="text-[10px] bg-slate-800 border border-slate-700/50 rounded px-2 py-0.5 text-[var(--muted)]">
-              Model: <strong className="text-indigo-400">gpt-4o-mini</strong>
+              Model: <strong className="text-indigo-400">Gemini AI</strong>
             </span>
           </div>
 

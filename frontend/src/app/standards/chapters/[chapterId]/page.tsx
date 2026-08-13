@@ -159,8 +159,8 @@ export default function ChapterDetailPage() {
         ) : chapter ? (
           <div className="space-y-8">
             {/* Video Player Box */}
-            <div className="overflow-hidden rounded-3xl border border-[var(--card-border)] bg-black shadow-2xl">
-              <div className="relative aspect-video w-full">
+            <div className="overflow-hidden rounded-3xl border border-[var(--card-border)] bg-black shadow-2xl space-y-3 p-2 bg-slate-900">
+              <div className="relative aspect-video w-full rounded-2xl overflow-hidden">
                 <iframe
                   src={chapter.videoUrl}
                   title={chapter.title}
@@ -168,6 +168,21 @@ export default function ChapterDetailPage() {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
+              </div>
+              <div className="flex items-center justify-between px-4 py-2 text-xs">
+                <span className="text-slate-400 flex items-center">
+                  <Video className="h-4 w-4 mr-1.5 text-indigo-400" />
+                  Video Explanation
+                </span>
+                <a
+                  href={chapter.videoUrl.replace("/embed/", "/watch?v=")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center space-x-1.5 font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+                >
+                  <PlayCircle className="h-4 w-4 text-red-500" />
+                  <span>Open directly in YouTube ↗</span>
+                </a>
               </div>
             </div>
 

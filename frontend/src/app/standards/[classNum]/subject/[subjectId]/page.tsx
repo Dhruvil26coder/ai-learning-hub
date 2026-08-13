@@ -122,7 +122,7 @@ export default function SubjectChaptersPage() {
               return (
                 <Link
                   key={ch.id}
-                  href={`/standards/chapter/${ch.id}`}
+                  href={`/standards/chapters/${ch.id}`}
                   className={`group relative overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 ${
                     isCompleted
                       ? "bg-emerald-950/20 border-emerald-500/30 hover:border-emerald-500/50"
