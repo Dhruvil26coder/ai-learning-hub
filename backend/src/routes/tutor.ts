@@ -195,14 +195,22 @@ Keep explanations clear, accurate, and educational.`;
     const geminiKey = process.env.GEMINI_API_KEY;
     if (geminiKey) {
       try {
-        // Build conversation history for multi-turn chat
-        const conversationHistory = (history || []).map((h: any) => ({
-          role: h.sender === "user" ? "user" : "model",
-          parts: [{ text: h.text }]
-        }));
+        // Build conversation history — Gemini requires alternating user/model roles
+        // and MUST start with "user". Filter out any leading "model" messages.
+        let rawHistory: Array<{ role: string; parts: { text: string }[] }> = (history || [])
+          .filter((h: any) => h.text && h.text.trim().length > 0)
+          .map((h: any) => ({
+            role: h.sender === "user" ? "user" : "model",
+            parts: [{ text: h.text.substring(0, 800) }] // cap length
+          }));
 
-        // Add the current user message
-        conversationHistory.push({
+        // Drop leading model messages (Gemini rejects if first turn is not "user")
+        while (rawHistory.length > 0 && rawHistory[0].role === "model") {
+          rawHistory.shift();
+        }
+
+        // Add the current user question at the end
+        rawHistory.push({
           role: "user",
           parts: [{ text: message }]
         });
@@ -216,7 +224,7 @@ Keep explanations clear, accurate, and educational.`;
               systemInstruction: {
                 parts: [{ text: systemPrompt }]
               },
-              contents: conversationHistory,
+              contents: rawHistory,
               generationConfig: {
                 temperature: 0.7,
                 maxOutputTokens: 2048,
@@ -225,14 +233,21 @@ Keep explanations clear, accurate, and educational.`;
             })
           }
         );
+
         const geminiData = await geminiRes.json() as any;
         const geminiText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (geminiText) {
+          console.log("[Gemini] ✅ Response received successfully");
           return res.json({ text: geminiText, provider: "google-gemini" });
         }
-        console.error("Gemini API returned no text:", JSON.stringify(geminiData));
+
+        // Log the actual error from Gemini for debugging
+        console.error("[Gemini] ❌ No text in response. Full response:", JSON.stringify(geminiData));
+        if (geminiData?.error) {
+          console.error("[Gemini] API Error details:", geminiData.error.message);
+        }
       } catch (geminiErr) {
-        console.error("Gemini API Error:", geminiErr);
+        console.error("[Gemini] ❌ Fetch error:", geminiErr);
       }
     }
 
