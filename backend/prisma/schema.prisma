@@ -21,10 +21,11 @@ model User {
   level         Int            @default(1)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  progress      Progress[]
-  achievements  Achievement[]
-  notes         Note[]
-  submissions   Submission[]
+  progress         Progress[]
+  achievements     Achievement[]
+  notes            Note[]
+  submissions      Submission[]
+  chapterProgress  ChapterProgress[]
 }
 
 model Course {
@@ -109,4 +110,43 @@ model Submission {
   score      Int
   passed     Boolean
   submittedAt DateTime @default(now())
+}
+
+model Standard {
+  id       Int       @id
+  name     String
+  subjects Subject[]
+}
+
+model Subject {
+  id         String    @id @default(uuid())
+  standardId Int
+  standard   Standard  @relation(fields: [standardId], references: [id], onDelete: Cascade)
+  name       String
+  icon       String
+  color      String
+  chapters   Chapter[]
+}
+
+model Chapter {
+  id          String            @id @default(uuid())
+  subjectId   String
+  subject     Subject           @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  title       String
+  summary     String
+  videoUrl    String
+  orderIndex  Int
+  keyConcepts String
+  progress    ChapterProgress[]
+}
+
+model ChapterProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapterId   String
+  chapter     Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, chapterId])
 }

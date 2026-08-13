@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: "AI Learning Hub - Premium AI-Powered Education",
   description: "Learn Mathematics, Computer Science, Coding, Web Development, and Sciences with personalized AI tutors, interactive courses, quizzes, and gamified progress.",
   keywords: ["AI education", "tutor", "coding playground", "math solver", "gamified learning", "courses"],
+  verification: {
+    google: "h1CSKNHP1B3fLdulfCicCfUSvwA73ledroP_iXzyvoM",
+  },
 };
 
 export const viewport = {

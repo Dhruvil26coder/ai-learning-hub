@@ -13,7 +13,8 @@ import {
   Settings,
   Flame,
   Award,
-  MessageSquare
+  MessageSquare,
+  GraduationCap
 } from "lucide-react";
 
 export const Sidebar: React.FC = () => {
@@ -22,6 +23,7 @@ export const Sidebar: React.FC = () => {
 
   const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Class 1-12", href: "/standards", icon: GraduationCap },
     { name: "Courses", href: "/courses", icon: BookOpen },
     { name: "AI Chat", href: "/chat", icon: MessageSquare },
     { name: "AI Tutor", href: "/tutor", icon: Sparkles },

@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth";
 import courseRoutes from "./routes/courses";
 import tutorRoutes from "./routes/tutor";
 import playgroundRoutes from "./routes/playground";
+import standardRoutes from "./routes/standards";
 import prisma from "./db";
 import http from "http";
 import https from "https";
@@ -33,6 +34,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/tutor", tutorRoutes);
 app.use("/api/playground", playgroundRoutes);
+app.use("/api/standards", standardRoutes);
 
 // Health check
 app.get("/health", (req, res) => {
