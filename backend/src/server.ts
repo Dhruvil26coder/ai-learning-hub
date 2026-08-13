@@ -41,6 +41,16 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", time: new Date() });
 });
 
+// Debug env check (safe - only shows key presence, not value)
+app.get("/debug/env", (req: any, res: any) => {
+  res.json({
+    hasGeminiKey: !!process.env.GEMINI_API_KEY,
+    geminiKeyLength: process.env.GEMINI_API_KEY?.length || 0,
+    hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+    nodeEnv: process.env.NODE_ENV || "not set"
+  });
+});
+
 // Global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("Global Error Handler:", err);
@@ -49,6 +59,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`[ENV] GEMINI_API_KEY loaded: ${!!process.env.GEMINI_API_KEY} (length: ${process.env.GEMINI_API_KEY?.length || 0})`);
+  console.log(`[ENV] OPENAI_API_KEY loaded: ${!!process.env.OPENAI_API_KEY}`);
 
   // ============================================
   // KEEP-ALIVE SYSTEM
