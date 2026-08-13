@@ -26,6 +26,7 @@ interface ChapterDetail {
   orderIndex: number;
   keyConcepts: string;
   subject: {
+    id: string;
     name: string;
     standard: {
       id: number;
@@ -38,7 +39,7 @@ export default function ChapterDetailPage() {
   const params = useParams();
   const router = useRouter();
   const chapterId = params.chapterId as string;
-  const { user, refreshUser } = useApp();
+  const { user, updateUserStats } = useApp();
 
   const [chapter, setChapter] = useState<ChapterDetail | null>(null);
   const [completed, setCompleted] = useState(false);
@@ -85,7 +86,7 @@ export default function ChapterDetailPage() {
       });
       setCompleted(true);
       setMsg(res.message || "Chapter completed! +25 XP");
-      refreshUser();
+      updateUserStats(user.xp + 25, user.level);
     } catch (err: any) {
       setMsg(err.message || "Failed to mark complete");
     } finally {
@@ -107,7 +108,7 @@ export default function ChapterDetailPage() {
         <div>
           {chapter && (
             <Link
-              href={`/standards/${chapter.subject.standard.id}/${chapter.subject.name}`}
+              href={`/standards/${chapter.subject.standard.id}/subject/${chapter.subject.id}`}
               className="inline-flex items-center text-sm text-[var(--muted)] hover:text-indigo-400 transition-colors mb-4"
             >
               <ArrowLeft className="h-4 w-4 mr-1.5" />

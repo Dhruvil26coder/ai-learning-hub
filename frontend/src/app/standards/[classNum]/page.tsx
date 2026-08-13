@@ -106,7 +106,7 @@ export default function SubjectsPage() {
             {subjects.map((sub) => (
               <Link
                 key={sub.id}
-                href={`/standards/${classNum}/${sub.id}`}
+                href={`/standards/${classNum}/subject/${sub.id}`}
                 className="group relative overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-indigo-500/10 flex flex-col justify-between"
               >
                 <div className="space-y-4">

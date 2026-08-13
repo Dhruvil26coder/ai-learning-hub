@@ -22,6 +22,10 @@ async function request(path: string, options: RequestInit = {}) {
   return response.json();
 }
 
+export async function apiFetch(path: string, options: RequestInit = {}) {
+  return request(path, options);
+}
+
 // Client-side fallback mocks if backend server isn't running
 const MOCK_COURSES = [
   {
