@@ -227,8 +227,11 @@ Keep explanations clear, accurate, and educational.`;
               contents: rawHistory,
               generationConfig: {
                 temperature: 0.7,
-                maxOutputTokens: 2048,
-                topP: 0.95
+                maxOutputTokens: 1500,
+                topP: 0.95,
+                thinkingConfig: {
+                  thinkingBudget: 0
+                }
               }
             })
           }
