@@ -51,6 +51,28 @@ app.get("/debug/env", (req: any, res: any) => {
   });
 });
 
+// Debug: test Gemini API directly and return raw result
+app.get("/debug/gemini-test", async (req: any, res: any) => {
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (!geminiKey) return res.json({ error: "No GEMINI_API_KEY set" });
+  try {
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: "Say hello in one sentence" }] }]
+        })
+      }
+    );
+    const data = await geminiRes.json();
+    res.json({ status: geminiRes.status, data });
+  } catch (err: any) {
+    res.json({ error: err.message });
+  }
+});
+
 // Global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("Global Error Handler:", err);
